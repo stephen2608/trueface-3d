@@ -79,37 +79,37 @@ export const LiveNeuralVoiceCoach: React.FC<Props> = ({ telemetry, mode, isActiv
   }, [telemetry, isActive, mode, isMuted]);
 
   return (
-    <div className="relative group bg-gradient-to-r from-zinc-900/90 via-zinc-900/95 to-zinc-900/90 rounded-2xl border border-zinc-800/90 p-4 shadow-xl backdrop-blur-xl flex flex-wrap items-center justify-between gap-4 hover:border-blue-500/40 transition-all duration-300">
-      <div className="flex items-center space-x-3.5 flex-1 min-w-[280px]">
+    <div className="relative group bg-gradient-to-r from-zinc-900/90 via-zinc-900/95 to-zinc-900/90 rounded-2xl border border-zinc-800/90 p-3 sm:p-4 shadow-xl backdrop-blur-xl flex items-center justify-between gap-3 hover:border-blue-500/40 transition-all duration-300">
+      <div className="flex items-center space-x-2.5 sm:space-x-3.5 flex-1 min-w-0">
         {/* Animated Sound Wave Equalizer Icon */}
-        <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
-          <div className="flex items-center space-x-0.5 h-4">
+        <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
+          <div className="flex items-center space-x-0.5 h-3.5 sm:h-4">
             <span className={`w-0.5 bg-blue-400 rounded-full transition-all duration-300 ${isActive ? 'h-3 animate-pulse' : 'h-1.5'}`} />
-            <span className={`w-0.5 bg-indigo-400 rounded-full transition-all duration-300 ${isActive ? 'h-4 animate-bounce' : 'h-2'}`} />
+            <span className={`w-0.5 bg-indigo-400 rounded-full transition-all duration-300 ${isActive ? 'h-3.5 sm:h-4 animate-bounce' : 'h-2'}`} />
             <span className={`w-0.5 bg-cyan-400 rounded-full transition-all duration-300 ${isActive ? 'h-2 animate-pulse' : 'h-1'}`} />
-            <span className={`w-0.5 bg-blue-400 rounded-full transition-all duration-300 ${isActive ? 'h-3.5 animate-bounce' : 'h-2'}`} />
+            <span className={`w-0.5 bg-blue-400 rounded-full transition-all duration-300 ${isActive ? 'h-3 animate-bounce' : 'h-2'}`} />
           </div>
         </div>
 
-        <div className="overflow-hidden">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-bold text-white tracking-wide">Live Voice Coach</span>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${isActive ? 'bg-blue-500/15 text-blue-400 border border-blue-500/25' : 'bg-zinc-800 text-zinc-500'}`}>
-              {isActive ? 'Listening & Guiding' : 'Ready'}
+        <div className="overflow-hidden flex-1 min-w-0">
+          <div className="flex items-center space-x-1.5 sm:space-x-2">
+            <span className="text-[11px] sm:text-xs font-bold text-white tracking-wide">Live Voice Coach</span>
+            <span className={`text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full font-medium ${isActive ? 'bg-blue-500/15 text-blue-400 border border-blue-500/25' : 'bg-zinc-800 text-zinc-500'}`}>
+              {isActive ? 'Listening' : 'Ready'}
             </span>
           </div>
-          <p className="text-xs text-zinc-300 font-medium truncate mt-0.5 flex items-center space-x-1.5">
-            <span className="text-blue-400">“</span>
-            <span>{lastMessage}</span>
-            <span className="text-blue-400">”</span>
+          <p className="text-[11px] sm:text-xs text-zinc-300 font-medium line-clamp-1 sm:truncate mt-0.5 flex items-center space-x-1">
+            <span className="text-blue-400 shrink-0">“</span>
+            <span className="truncate">{lastMessage}</span>
+            <span className="text-blue-400 shrink-0">”</span>
           </p>
         </div>
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center shrink-0">
         <button
           onClick={() => setIsMuted(!isMuted)}
-          className={`px-3 py-1.5 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center space-x-1.5 ${
+          className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border text-[10px] sm:text-xs font-medium transition-all duration-200 flex items-center space-x-1 sm:space-x-1.5 ${
             isMuted
               ? 'bg-zinc-800/80 border-zinc-700 text-zinc-400 hover:text-white'
               : 'bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20'
@@ -119,12 +119,12 @@ export const LiveNeuralVoiceCoach: React.FC<Props> = ({ telemetry, mode, isActiv
           {isMuted ? (
             <>
               <VolumeX className="w-3.5 h-3.5 text-zinc-400" />
-              <span>Unmute Coach</span>
+              <span className="hidden xs:inline">Unmute</span>
             </>
           ) : (
             <>
               <Volume2 className="w-3.5 h-3.5 text-blue-400" />
-              <span>Sound On</span>
+              <span className="hidden xs:inline">Sound</span>
             </>
           )}
         </button>

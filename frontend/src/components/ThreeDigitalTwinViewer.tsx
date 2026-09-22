@@ -205,64 +205,67 @@ export const ThreeDigitalTwinViewer: React.FC<Props> = ({ landmarks, telemetry }
   };
 
   return (
-    <div className="relative w-full h-full bg-gradient-to-b from-zinc-900/90 to-zinc-950/90 rounded-2xl border border-zinc-800/80 overflow-hidden flex flex-col shadow-xl backdrop-blur-xl group hover:border-zinc-700 transition-all">
+    <div className="relative w-full h-full bg-gradient-to-b from-zinc-900/90 to-zinc-950/90 rounded-2xl border border-zinc-800/80 overflow-hidden flex flex-col shadow-xl backdrop-blur-xl group hover:border-zinc-700 transition-all min-h-[260px] sm:min-h-[340px]">
       {/* Header */}
-      <div className="absolute top-3.5 left-4 right-4 z-20 flex items-center justify-between pointer-events-auto">
-        <div className="flex items-center space-x-2">
+      <div className="absolute top-2.5 sm:top-3.5 left-3 sm:left-4 right-3 sm:right-4 z-20 flex items-center justify-between pointer-events-auto gap-2">
+        <div className="flex items-center space-x-1.5 sm:space-x-2">
           <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-          <span className="text-xs font-semibold text-white tracking-wide">
-            Live 3D Face Model
-          </span>
-          <span className="hidden sm:inline text-[11px] text-zinc-400">
-            • 478 points
+          <span className="text-[11px] sm:text-xs font-semibold text-white tracking-wide">
+            3D Face Model
           </span>
         </div>
 
         {/* View Controls */}
-        <div className="flex items-center space-x-1 bg-zinc-900/90 p-1 rounded-xl border border-zinc-800 shadow-md text-xs">
+        <div className="flex items-center space-x-0.5 sm:space-x-1 bg-zinc-900/90 p-0.5 sm:p-1 rounded-lg sm:rounded-xl border border-zinc-800 shadow-md text-[10px] sm:text-xs">
           <button
             onClick={() => setCameraPreset('FRONT')}
-            className={`px-2.5 py-1 rounded-lg transition-all ${cameraAngle === 'FRONT' ? 'bg-zinc-800 text-white font-semibold shadow' : 'text-zinc-400 hover:text-white'}`}
+            className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg transition-all ${
+              cameraAngle === 'FRONT' ? 'bg-zinc-800 text-white font-semibold shadow' : 'text-zinc-400 hover:text-white'
+            }`}
           >
             Front
           </button>
           <button
             onClick={() => setCameraPreset('ANGLE_45')}
-            className={`px-2.5 py-1 rounded-lg transition-all ${cameraAngle === 'ANGLE_45' ? 'bg-zinc-800 text-white font-semibold shadow' : 'text-zinc-400 hover:text-white'}`}
+            className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg transition-all ${
+              cameraAngle === 'ANGLE_45' ? 'bg-zinc-800 text-white font-semibold shadow' : 'text-zinc-400 hover:text-white'
+            }`}
           >
             45°
           </button>
           <button
             onClick={() => setCameraPreset('SIDE')}
-            className={`px-2.5 py-1 rounded-lg transition-all ${cameraAngle === 'SIDE' ? 'bg-zinc-800 text-white font-semibold shadow' : 'text-zinc-400 hover:text-white'}`}
+            className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg transition-all ${
+              cameraAngle === 'SIDE' ? 'bg-zinc-800 text-white font-semibold shadow' : 'text-zinc-400 hover:text-white'
+            }`}
           >
             Side
           </button>
           <button
             onClick={toggleRenderMode}
-            className="px-2 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 flex items-center space-x-1"
+            className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 flex items-center space-x-1"
             title="Switch wireframe style"
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span className="text-[11px] font-medium capitalize">{renderMode.toLowerCase()}</span>
+            <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <span className="capitalize hidden xs:inline">{renderMode.toLowerCase()}</span>
           </button>
         </div>
       </div>
 
       {/* 3D Canvas */}
-      <div ref={containerRef} className="w-full h-full min-h-[320px] cursor-grab active:cursor-grabbing" />
+      <div ref={containerRef} className="w-full h-full min-h-[240px] sm:min-h-[320px] cursor-grab active:cursor-grabbing" />
 
       {/* Footer Pill */}
       {telemetry && (
-        <div className="absolute bottom-3 left-4 right-4 z-20 flex items-center justify-between bg-zinc-900/90 px-4 py-2 rounded-xl border border-zinc-800/80 backdrop-blur-md text-xs text-zinc-300 shadow-lg">
-          <div className="flex items-center space-x-3">
-            <span>Pitch: <strong className="text-white">{telemetry.pitch}°</strong></span>
-            <span>Yaw: <strong className="text-white">{telemetry.yaw}°</strong></span>
-            <span>Roll: <strong className="text-white">{telemetry.roll}°</strong></span>
+        <div className="absolute bottom-2.5 sm:bottom-3 left-3 sm:left-4 right-3 sm:right-4 z-20 flex items-center justify-between bg-zinc-900/90 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border border-zinc-800/80 backdrop-blur-md text-[10px] sm:text-xs text-zinc-300 shadow-lg">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <span>P: <strong className="text-white">{telemetry.pitch}°</strong></span>
+            <span>Y: <strong className="text-white">{telemetry.yaw}°</strong></span>
+            <span>R: <strong className="text-white">{telemetry.roll}°</strong></span>
           </div>
-          <div className="flex items-center space-x-1.5">
-            <span className="text-zinc-400">Distance:</span>
-            <strong className="text-blue-400 font-semibold">{telemetry.screenDistanceCm} cm</strong>
+          <div className="flex items-center space-x-1">
+            <span className="text-zinc-400">Dist:</span>
+            <strong className="text-blue-400 font-semibold">{telemetry.screenDistanceCm}cm</strong>
           </div>
         </div>
       )}
