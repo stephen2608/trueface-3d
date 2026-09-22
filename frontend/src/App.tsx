@@ -24,7 +24,6 @@ export const App: React.FC = () => {
   const [telemetryHistory, setTelemetryHistory] = useState<SpatialTelemetryResponse[]>([]);
   const [scorecard, setScorecard] = useState<ExecutiveScorecard | null>(null);
   const [sessionStartTime, setSessionStartTime] = useState<number>(0);
-  const [mobileView, setMobileView] = useState<'CAMERA' | '3D_TWIN' | 'SPLIT'>('CAMERA');
   const [speechMetrics, setSpeechMetrics] = useState<SpeechAnalysisMetrics>({
     transcript: '',
     interimTranscript: '',
@@ -187,45 +186,18 @@ export const App: React.FC = () => {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 space-y-4 sm:space-y-5 relative z-10">
-        {/* Mobile Viewport Selector (Visible on mobile screens < lg) */}
-        <div className="flex lg:hidden items-center justify-between bg-zinc-900/90 p-1 rounded-xl border border-zinc-800 text-xs shadow-md">
-          <button
-            onClick={() => setMobileView('CAMERA')}
-            className={`flex-1 py-1.5 px-2 rounded-lg font-semibold transition-all ${
-              mobileView === 'CAMERA' ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            📹 Camera Feed
-          </button>
-          <button
-            onClick={() => setMobileView('3D_TWIN')}
-            className={`flex-1 py-1.5 px-2 rounded-lg font-semibold transition-all ${
-              mobileView === '3D_TWIN' ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            🌐 3D Face Model
-          </button>
-          <button
-            onClick={() => setMobileView('SPLIT')}
-            className={`flex-1 py-1.5 px-2 rounded-lg font-semibold transition-all ${
-              mobileView === 'SPLIT' ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            ⚏ Split View
-          </button>
-        </div>
-
-        {/* Top Viewports: Camera Feed (Left) & 3D Spatial Model (Right) */}
+        {/* Top Viewports: Camera Feed (Left) & 3D Spatial Model (Right) - Full rich UI on both Mobile & Laptop */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 sm:gap-5 min-h-[280px] sm:min-h-[380px]">
-          <div className={`${mobileView === '3D_TWIN' ? 'hidden lg:block' : 'block'} h-full min-h-[280px] sm:min-h-[360px]`}>
+          <div className="h-full min-h-[280px] sm:min-h-[360px]">
             <WebcamTracker3D
               isStreaming={isSessionActive}
               landmarks={landmarks}
               telemetry={telemetry}
+              onStartSession={handleToggleSession}
             />
           </div>
 
-          <div className={`${mobileView === 'CAMERA' ? 'hidden lg:block' : 'block'} h-full min-h-[280px] sm:min-h-[360px]`}>
+          <div className="h-full min-h-[280px] sm:min-h-[360px]">
             <ThreeDigitalTwinViewer
               landmarks={landmarks}
               telemetry={telemetry}

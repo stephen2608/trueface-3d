@@ -71,11 +71,24 @@ export class MediaPipe3DEngine {
         }
       }
 
-      // Fallback: standard getUserMedia
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: 'user' },
-        audio: false,
-      });
+      // Fallback: standard getUserMedia with mobile-friendly constraints
+      let stream: MediaStream | null = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user',
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+          audio: false,
+        });
+      } catch (innerErr) {
+        // Broadest fallback: any video device
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
+      }
 
       this.videoElement.srcObject = stream;
       await this.videoElement.play();

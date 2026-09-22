@@ -7,32 +7,56 @@ interface Props {
 }
 
 export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
-  if (!telemetry) {
-    return (
-      <div className="bg-gradient-to-b from-zinc-900/90 to-zinc-950/90 rounded-2xl border border-zinc-800 p-6 flex flex-col items-center justify-center min-h-[160px] text-zinc-500 text-sm shadow-sm backdrop-blur-xl">
-        <Activity className="w-5 h-5 mb-2 text-zinc-600 animate-pulse" />
-        <span>Waiting for face tracking data...</span>
-      </div>
-    );
-  }
+  const isLive = Boolean(telemetry);
+  const data: SpatialTelemetryResponse = telemetry || {
+    sessionUuid: 'standby',
+    timestampMs: Date.now(),
+    pitch: 0,
+    yaw: 0,
+    roll: 0,
+    screenDistanceCm: 62,
+    ergonomicHealthScore: 98,
+    postureStatus: 'OPTIMAL_POSTURE',
+    smileAuthenticity: 80,
+    smileType: 'COURTESY_SOCIAL',
+    mouthSmileIntensity: 58,
+    cheekElevationIntensity: 62,
+    eyeCompressionIntensity: 42,
+    symmetryScore: 94,
+    symmetryStatus: 'BALANCED_HARMONY',
+    gazeAttentionScore: 92,
+    isLookingAtScreen: true,
+    joy: 65,
+    calm: 80,
+    focusTension: 20,
+    surprise: 5,
+    sadness: 0,
+    skepticism: 5,
+    dominantEmotion: 'ENGAGED',
+    stressScore: 16,
+    composureScore: 84,
+  };
 
   const getSmileBadge = () => {
-    switch (telemetry.smileType) {
+    if (!isLive) {
+      return <span className="text-zinc-400 bg-zinc-800/80 border border-zinc-700 px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium">Standby</span>;
+    }
+    switch (data.smileType) {
       case 'GENUINE_DUCHENNE':
-        return <span className="text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-2.5 py-0.5 rounded-full text-xs font-semibold">Natural Smile</span>;
+        return <span className="text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold">Natural</span>;
       case 'COURTESY_SOCIAL':
-        return <span className="text-zinc-300 bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 rounded-full text-xs font-medium">Polite Smile</span>;
+        return <span className="text-zinc-300 bg-zinc-800 border border-zinc-700 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium">Polite</span>;
       case 'FORCED_OR_MASKED':
-        return <span className="text-amber-400 bg-amber-950/80 border border-amber-800/80 px-2.5 py-0.5 rounded-full text-xs font-semibold">Tense Smile</span>;
+        return <span className="text-amber-400 bg-amber-950/80 border border-amber-800/80 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold">Tense</span>;
       default:
-        return <span className="text-zinc-400 bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 rounded-full text-xs font-medium">Relaxed</span>;
+        return <span className="text-zinc-400 bg-zinc-800 border border-zinc-700 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium">Relaxed</span>;
     }
   };
 
   const radius = 28;
   const circumference = 2 * Math.PI * radius;
-  const authenticityOffset = circumference - (Math.min(100, telemetry.smileAuthenticity) / 100) * circumference;
-  const postureOffset = circumference - (Math.min(100, telemetry.ergonomicHealthScore) / 100) * circumference;
+  const authenticityOffset = circumference - (Math.min(100, data.smileAuthenticity) / 100) * circumference;
+  const postureOffset = circumference - (Math.min(100, data.ergonomicHealthScore) / 100) * circumference;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -73,22 +97,22 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
               />
             </svg>
             <div className="absolute text-center">
-              <span className="text-xs sm:text-base font-bold font-mono text-white">{telemetry.smileAuthenticity}%</span>
+              <span className="text-xs sm:text-base font-bold font-mono text-white">{data.smileAuthenticity}%</span>
             </div>
           </div>
 
           <div className="space-y-0.5 sm:space-y-1 text-right text-[10px] sm:text-xs">
             <div>
               <span className="text-zinc-500">Cheek: </span>
-              <strong className="text-zinc-200">{telemetry.cheekElevationIntensity}%</strong>
+              <strong className="text-zinc-200">{data.cheekElevationIntensity}%</strong>
             </div>
             <div>
               <span className="text-zinc-500">Eyes: </span>
-              <strong className="text-zinc-200">{telemetry.eyeCompressionIntensity}%</strong>
+              <strong className="text-zinc-200">{data.eyeCompressionIntensity}%</strong>
             </div>
             <div>
               <span className="text-zinc-500">Width: </span>
-              <strong className="text-zinc-200">{telemetry.mouthSmileIntensity}%</strong>
+              <strong className="text-zinc-200">{data.mouthSmileIntensity}%</strong>
             </div>
           </div>
         </div>
@@ -96,7 +120,7 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
         <div className="text-[10px] sm:text-xs text-zinc-400 pt-1.5 sm:pt-2 border-t border-zinc-800/80 flex justify-between">
           <span>Expression:</span>
           <span className="text-blue-400 font-medium truncate ml-1">
-            {telemetry.smileAuthenticity > 60 ? 'Genuine' : 'Neutral'}
+            {data.smileAuthenticity > 60 ? 'Genuine' : 'Neutral'}
           </span>
         </div>
       </div>
@@ -111,27 +135,27 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
             <span className="truncate">Head Angle</span>
           </div>
           <span className="text-[10px] sm:text-xs bg-zinc-800 text-zinc-300 border border-zinc-700 px-1.5 sm:px-2 py-0.5 rounded-full font-mono">
-            Deg
+            {isLive ? 'Live' : 'Deg'}
           </span>
         </div>
 
         <div className="grid grid-cols-3 gap-1 sm:gap-2 my-1.5 sm:my-2 text-center">
           <div className="bg-zinc-800/60 p-1 sm:p-2 rounded-lg sm:rounded-xl border border-zinc-700/60">
             <div className="text-[9px] sm:text-[11px] text-zinc-400 truncate">Pitch</div>
-            <div className="text-xs sm:text-base font-bold font-mono text-white mt-0.5">{telemetry.pitch}°</div>
-            <div className="text-[8px] sm:text-[10px] text-zinc-500 mt-0.5 truncate">{telemetry.pitch < -8 ? 'Down' : telemetry.pitch > 8 ? 'Up' : 'Level'}</div>
+            <div className="text-xs sm:text-base font-bold font-mono text-white mt-0.5">{data.pitch}°</div>
+            <div className="text-[8px] sm:text-[10px] text-zinc-500 mt-0.5 truncate">{data.pitch < -8 ? 'Down' : data.pitch > 8 ? 'Up' : 'Level'}</div>
           </div>
 
           <div className="bg-zinc-800/60 p-1 sm:p-2 rounded-lg sm:rounded-xl border border-zinc-700/60">
             <div className="text-[9px] sm:text-[11px] text-zinc-400 truncate">Yaw</div>
-            <div className="text-xs sm:text-base font-bold font-mono text-white mt-0.5">{telemetry.yaw}°</div>
-            <div className="text-[8px] sm:text-[10px] text-zinc-500 mt-0.5 truncate">{telemetry.yaw < -8 ? 'Left' : telemetry.yaw > 8 ? 'Right' : 'Center'}</div>
+            <div className="text-xs sm:text-base font-bold font-mono text-white mt-0.5">{data.yaw}°</div>
+            <div className="text-[8px] sm:text-[10px] text-zinc-500 mt-0.5 truncate">{data.yaw < -8 ? 'Left' : data.yaw > 8 ? 'Right' : 'Center'}</div>
           </div>
 
           <div className="bg-zinc-800/60 p-1 sm:p-2 rounded-lg sm:rounded-xl border border-zinc-700/60">
             <div className="text-[9px] sm:text-[11px] text-zinc-400 truncate">Roll</div>
-            <div className="text-xs sm:text-base font-bold font-mono text-white mt-0.5">{telemetry.roll}°</div>
-            <div className="text-[8px] sm:text-[10px] text-zinc-500 mt-0.5 truncate">{Math.abs(telemetry.roll) > 8 ? 'Tilt' : 'Level'}</div>
+            <div className="text-xs sm:text-base font-bold font-mono text-white mt-0.5">{data.roll}°</div>
+            <div className="text-[8px] sm:text-[10px] text-zinc-500 mt-0.5 truncate">{Math.abs(data.roll) > 8 ? 'Tilt' : 'Level'}</div>
           </div>
         </div>
 
@@ -151,11 +175,11 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
             <span className="truncate">Distance</span>
           </div>
           <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium ${
-            telemetry.postureStatus === 'OPTIMAL_POSTURE'
+            data.postureStatus === 'OPTIMAL_POSTURE'
               ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/80'
               : 'bg-amber-950 text-amber-400 border border-amber-800/80'
           }`}>
-            {telemetry.postureStatus === 'OPTIMAL_POSTURE' ? 'Good' : 'Adjust'}
+            {data.postureStatus === 'OPTIMAL_POSTURE' ? 'Good' : 'Adjust'}
           </span>
         </div>
 
@@ -174,7 +198,7 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
                 cx="35"
                 cy="35"
                 r={radius}
-                className={`transition-all duration-500 ${telemetry.postureStatus === 'OPTIMAL_POSTURE' ? 'stroke-amber-400' : 'stroke-red-400'}`}
+                className={`transition-all duration-500 ${data.postureStatus === 'OPTIMAL_POSTURE' ? 'stroke-amber-400' : 'stroke-red-400'}`}
                 strokeWidth="5"
                 strokeDasharray={circumference}
                 strokeDashoffset={postureOffset}
@@ -183,7 +207,7 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
               />
             </svg>
             <div className="absolute text-center">
-              <span className="text-xs sm:text-base font-bold font-mono text-white">{telemetry.screenDistanceCm}</span>
+              <span className="text-xs sm:text-base font-bold font-mono text-white">{data.screenDistanceCm}</span>
               <span className="text-[8px] sm:text-[10px] block text-zinc-400 leading-none">cm</span>
             </div>
           </div>
@@ -191,7 +215,7 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
           <div className="space-y-0.5 sm:space-y-1 text-right text-[10px] sm:text-xs">
             <div>
               <span className="text-zinc-500">Posture: </span>
-              <strong className="text-zinc-200">{telemetry.ergonomicHealthScore}%</strong>
+              <strong className="text-zinc-200">{data.ergonomicHealthScore}%</strong>
             </div>
             <div>
               <span className="text-zinc-500">Ideal: </span>
@@ -199,8 +223,8 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
             </div>
             <div>
               <span className="text-zinc-500">Zone: </span>
-              <strong className={telemetry.screenDistanceCm >= 45 ? 'text-emerald-400' : 'text-amber-400'}>
-                {telemetry.screenDistanceCm >= 45 ? 'Good' : 'Close'}
+              <strong className={data.screenDistanceCm >= 45 ? 'text-emerald-400' : 'text-amber-400'}>
+                {data.screenDistanceCm >= 45 ? 'Good' : 'Close'}
               </strong>
             </div>
           </div>
@@ -208,8 +232,8 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
 
         <div className="text-[10px] sm:text-xs text-zinc-400 pt-1.5 sm:pt-2 border-t border-zinc-800/80 flex justify-between">
           <span>Spine:</span>
-          <span className={telemetry.screenDistanceCm >= 45 ? 'text-emerald-400 font-medium truncate ml-1' : 'text-amber-400 font-medium truncate ml-1'}>
-            {telemetry.screenDistanceCm >= 45 ? 'Upright' : 'Craning'}
+          <span className={data.screenDistanceCm >= 45 ? 'text-emerald-400 font-medium truncate ml-1' : 'text-amber-400 font-medium truncate ml-1'}>
+            {data.screenDistanceCm >= 45 ? 'Upright' : 'Craning'}
           </span>
         </div>
       </div>
@@ -224,9 +248,9 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
             <span className="truncate">Gaze &amp; Balance</span>
           </div>
           <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium ${
-            telemetry.isLookingAtScreen ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/80' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+            data.isLookingAtScreen ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/80' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
           }`}>
-            {telemetry.isLookingAtScreen ? 'Screen' : 'Away'}
+            {isLive ? (data.isLookingAtScreen ? 'Screen' : 'Away') : 'Standby'}
           </span>
         </div>
 
@@ -234,14 +258,14 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
           <div>
             <div className="flex justify-between text-[10px] sm:text-xs mb-0.5 sm:mb-1">
               <span className="text-zinc-400">Eye Contact</span>
-              <strong className={telemetry.isLookingAtScreen ? 'text-emerald-400' : 'text-amber-400'}>
-                {telemetry.gazeAttentionScore}%
+              <strong className={data.isLookingAtScreen ? 'text-emerald-400' : 'text-amber-400'}>
+                {data.gazeAttentionScore}%
               </strong>
             </div>
             <div className="w-full bg-zinc-800 rounded-full h-1.5 sm:h-2 overflow-hidden">
               <div
-                className={`h-full transition-all duration-300 ${telemetry.isLookingAtScreen ? 'bg-emerald-400' : 'bg-amber-400'}`}
-                style={{ width: `${Math.min(100, telemetry.gazeAttentionScore)}%` }}
+                className={`h-full transition-all duration-300 ${data.isLookingAtScreen ? 'bg-emerald-400' : 'bg-amber-400'}`}
+                style={{ width: `${Math.min(100, data.gazeAttentionScore)}%` }}
               />
             </div>
           </div>
@@ -249,12 +273,12 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
           <div>
             <div className="flex justify-between text-[10px] sm:text-xs mb-0.5 sm:mb-1">
               <span className="text-zinc-400">Symmetry</span>
-              <strong className="text-purple-400">{telemetry.symmetryScore}%</strong>
+              <strong className="text-purple-400">{data.symmetryScore}%</strong>
             </div>
             <div className="w-full bg-zinc-800 rounded-full h-1.5 sm:h-2 overflow-hidden">
               <div
                 className="h-full bg-purple-500 transition-all duration-300"
-                style={{ width: `${Math.min(100, telemetry.symmetryScore)}%` }}
+                style={{ width: `${Math.min(100, data.symmetryScore)}%` }}
               />
             </div>
           </div>
@@ -262,8 +286,8 @@ export const CyberpunkTelemetryHUD: React.FC<Props> = ({ telemetry }) => {
 
         <div className="text-[10px] sm:text-xs text-zinc-400 pt-1.5 sm:pt-2 border-t border-zinc-800/80 flex justify-between">
           <span>Gaze:</span>
-          <strong className={telemetry.isLookingAtScreen ? 'text-emerald-400 truncate ml-1' : 'text-amber-400 truncate ml-1'}>
-            {telemetry.isLookingAtScreen ? 'Direct' : 'Away'}
+          <strong className={data.isLookingAtScreen ? 'text-emerald-400 truncate ml-1' : 'text-amber-400 truncate ml-1'}>
+            {data.isLookingAtScreen ? 'Direct' : 'Away'}
           </strong>
         </div>
       </div>

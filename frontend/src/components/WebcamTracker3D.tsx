@@ -6,9 +6,10 @@ interface Props {
   isStreaming: boolean;
   landmarks: Point3D[] | null;
   telemetry: SpatialTelemetryResponse | null;
+  onStartSession?: () => void;
 }
 
-export const WebcamTracker3D: React.FC<Props> = ({ isStreaming, landmarks, telemetry }) => {
+export const WebcamTracker3D: React.FC<Props> = ({ isStreaming, landmarks, telemetry, onStartSession }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -115,9 +116,19 @@ export const WebcamTracker3D: React.FC<Props> = ({ isStreaming, landmarks, telem
 
         {!isStreaming && (
           <div className="z-20 flex flex-col items-center justify-center p-4 sm:p-6 text-center text-zinc-400">
-            <Camera className="w-8 h-8 sm:w-10 sm:h-10 mb-1.5 text-zinc-600" />
-            <p className="text-xs sm:text-sm font-semibold text-zinc-200">Camera is Off</p>
-            <p className="text-[10px] sm:text-xs text-zinc-500 mt-0.5">Click "Start" above to turn on face tracking</p>
+            <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-2 sm:mb-3 shadow-lg shadow-blue-500/20">
+              <Camera className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <p className="text-xs sm:text-sm font-bold text-white">Camera Standby</p>
+            <p className="text-[10px] sm:text-xs text-zinc-400 mt-0.5 max-w-xs">Tap below to activate real-time face tracking</p>
+            {onStartSession && (
+              <button
+                onClick={onStartSession}
+                className="mt-3 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/30 active:scale-95 transition-all flex items-center space-x-1.5"
+              >
+                <span>⚡ Tap to Start Camera</span>
+              </button>
+            )}
           </div>
         )}
       </div>

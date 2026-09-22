@@ -16,9 +16,58 @@ export const ThreeDigitalTwinViewer: React.FC<Props> = ({ landmarks, telemetry }
   const pointsMeshRef = useRef<THREE.Points | null>(null);
   const linesMeshRef = useRef<THREE.LineSegments | null>(null);
   const groupRef = useRef<THREE.Group | null>(null);
+  const hasActiveLandmarksRef = useRef<boolean>(false);
 
   const [renderMode, setRenderMode] = useState<'MESH' | 'POINTS' | 'WIREFRAME'>('MESH');
   const [cameraAngle, setCameraAngle] = useState<'FRONT' | 'ANGLE_45' | 'SIDE'>('FRONT');
+
+  const createDefaultFacePositions = (): Float32Array => {
+    const positions = new Float32Array(478 * 3);
+    for (let i = 0; i < 478; i++) {
+      const angle = (i / 478) * Math.PI * 2;
+      const layer = (i % 30) / 30;
+      const y = (layer - 0.5) * 1.1;
+      const r = Math.sqrt(Math.max(0, 1 - (y / 0.7) ** 2)) * 0.46;
+      positions[i * 3] = Math.cos(angle) * r;
+      positions[i * 3 + 1] = -y;
+      positions[i * 3 + 2] = Math.max(-0.25, Math.sin(angle) * r * 0.65);
+    }
+    const jaw = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+    jaw.forEach((idx, i) => {
+      const t = (i / (jaw.length - 1)) * Math.PI - Math.PI / 2;
+      positions[idx * 3] = Math.sin(t) * 0.44;
+      positions[idx * 3 + 1] = -Math.cos(t) * 0.52 + 0.06;
+      positions[idx * 3 + 2] = Math.cos(t) * 0.22 - 0.08;
+    });
+    const lips = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146];
+    lips.forEach((idx, i) => {
+      const angle = (i / lips.length) * Math.PI * 2;
+      positions[idx * 3] = Math.sin(angle) * 0.16;
+      positions[idx * 3 + 1] = -0.24 + Math.cos(angle) * 0.055;
+      positions[idx * 3 + 2] = 0.22;
+    });
+    const leftEye = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
+    leftEye.forEach((idx, i) => {
+      const a = (i / leftEye.length) * Math.PI * 2;
+      positions[idx * 3] = -0.19 + Math.sin(a) * 0.07;
+      positions[idx * 3 + 1] = 0.14 + Math.cos(a) * 0.035;
+      positions[idx * 3 + 2] = 0.19;
+    });
+    const rightEye = [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466];
+    rightEye.forEach((idx, i) => {
+      const a = (i / rightEye.length) * Math.PI * 2;
+      positions[idx * 3] = 0.19 + Math.sin(a) * 0.07;
+      positions[idx * 3 + 1] = 0.14 + Math.cos(a) * 0.035;
+      positions[idx * 3 + 2] = 0.19;
+    });
+    const nose = [168, 6, 197, 195, 5, 4, 1, 19, 94, 2];
+    nose.forEach((idx, i) => {
+      positions[idx * 3] = (i === 1 || i === 9 ? -0.04 : i === 8 ? 0.04 : 0);
+      positions[idx * 3 + 1] = 0.15 - (i / nose.length) * 0.3;
+      positions[idx * 3 + 2] = 0.16 + Math.sin((i / nose.length) * Math.PI) * 0.16;
+    });
+    return positions;
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -60,11 +109,10 @@ export const ThreeDigitalTwinViewer: React.FC<Props> = ({ landmarks, telemetry }
     groupRef.current = group;
     scene.add(group);
 
-    // 5. Geometry (478 vertices)
-    const vertexCount = 478;
-    const positions = new Float32Array(vertexCount * 3);
+    // 5. Geometry (478 vertices pre-populated with canonical face)
+    const initialPositions = createDefaultFacePositions();
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('position', new THREE.BufferAttribute(initialPositions, 3));
 
     // Points Material with soft glow
     const pointsMaterial = new THREE.PointsMaterial({
@@ -100,7 +148,7 @@ export const ThreeDigitalTwinViewer: React.FC<Props> = ({ landmarks, telemetry }
     for (let i = 0; i < nose.length - 1; i++) lineIndices.push(nose[i], nose[i + 1]);
 
     const lineGeometry = new THREE.BufferGeometry();
-    lineGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    lineGeometry.setAttribute('position', new THREE.BufferAttribute(initialPositions, 3));
     lineGeometry.setIndex(lineIndices);
 
     const lineMaterial = new THREE.LineBasicMaterial({
@@ -117,10 +165,16 @@ export const ThreeDigitalTwinViewer: React.FC<Props> = ({ landmarks, telemetry }
     grid.position.y = -1.2;
     scene.add(grid);
 
-    // 7. Animation Loop
+    // 7. Animation Loop with Idle Floating Motion
     let animationId: number;
     const animate = () => {
       animationId = requestAnimationFrame(animate);
+      if (!hasActiveLandmarksRef.current && groupRef.current) {
+        const t = performance.now() * 0.001;
+        groupRef.current.rotation.y = Math.sin(t * 0.7) * 0.12;
+        groupRef.current.rotation.x = Math.cos(t * 0.5) * 0.04;
+        groupRef.current.position.y = Math.sin(t * 1.1) * 0.02;
+      }
       renderer.render(scene, camera);
     };
     animate();
@@ -148,8 +202,12 @@ export const ThreeDigitalTwinViewer: React.FC<Props> = ({ landmarks, telemetry }
 
   // Update Points and Rotation
   useEffect(() => {
-    if (!landmarks || landmarks.length === 0 || !pointsMeshRef.current || !linesMeshRef.current) return;
+    if (!landmarks || landmarks.length === 0 || !pointsMeshRef.current || !linesMeshRef.current) {
+      hasActiveLandmarksRef.current = false;
+      return;
+    }
 
+    hasActiveLandmarksRef.current = true;
     const positions = (pointsMeshRef.current.geometry.attributes.position as THREE.BufferAttribute).array as Float32Array;
 
     for (let i = 0; i < Math.min(landmarks.length, 478); i++) {
