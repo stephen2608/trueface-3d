@@ -15,6 +15,56 @@ export class MediaPipe3DEngine {
   private isRunning = false;
   private fallbackInterval: number | null = null;
 
+  private async loadMediaPipeScripts(): Promise<boolean> {
+    if (typeof window !== 'undefined' && window.FaceMesh && window.Camera) {
+      return true;
+    }
+
+    return new Promise((resolve) => {
+      let resolved = false;
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          resolve(false);
+        }
+      }, 1500); // 1.5s max to prevent mobile hang
+
+      const appendScript = (src: string) => {
+        return new Promise<void>((res, rej) => {
+          if (document.querySelector(`script[src="${src}"]`)) {
+            res();
+            return;
+          }
+          const s = document.createElement('script');
+          s.src = src;
+          s.crossOrigin = 'anonymous';
+          s.onload = () => res();
+          s.onerror = () => rej();
+          document.head.appendChild(s);
+        });
+      };
+
+      Promise.all([
+        appendScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js'),
+        appendScript('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js'),
+      ])
+        .then(() => {
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(timeout);
+            resolve(Boolean(window.FaceMesh && window.Camera));
+          }
+        })
+        .catch(() => {
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(timeout);
+            resolve(false);
+          }
+        });
+    });
+  }
+
   public async start(
     video: HTMLVideoElement,
     onLandmarks: (landmarks: Point3D[]) => void
@@ -24,7 +74,10 @@ export class MediaPipe3DEngine {
     this.isRunning = true;
 
     try {
-      // Initialize MediaPipe FaceMesh
+      // Attempt dynamic load of MediaPipe without blocking page open
+      await this.loadMediaPipeScripts();
+
+      // Initialize MediaPipe FaceMesh if available
       if (typeof window !== 'undefined' && window.FaceMesh) {
         this.faceMesh = new window.FaceMesh({
           locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,

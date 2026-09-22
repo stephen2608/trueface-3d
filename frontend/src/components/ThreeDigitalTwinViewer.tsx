@@ -72,25 +72,26 @@ export const ThreeDigitalTwinViewer: React.FC<Props> = ({ landmarks, telemetry }
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const container = containerRef.current;
-    const width = container.clientWidth || 400;
-    const height = container.clientHeight || 350;
+    try {
+      const container = containerRef.current;
+      const width = Math.max(280, container.clientWidth || 360);
+      const height = Math.max(260, container.clientHeight || 320);
 
-    // 1. Scene & Camera
-    const scene = new THREE.Scene();
-    sceneRef.current = scene;
+      // 1. Scene & Camera
+      const scene = new THREE.Scene();
+      sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 2.5);
-    cameraRef.current = camera;
+      const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+      camera.position.set(0, 0, 2.5);
+      cameraRef.current = camera;
 
-    // 2. Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    rendererRef.current = renderer;
-    container.innerHTML = '';
-    container.appendChild(renderer.domElement);
+      // 2. Renderer with mobile compatibility
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'default' });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      rendererRef.current = renderer;
+      container.innerHTML = '';
+      container.appendChild(renderer.domElement);
 
     // 3. Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
@@ -183,6 +184,7 @@ export const ThreeDigitalTwinViewer: React.FC<Props> = ({ landmarks, telemetry }
       if (!containerRef.current || !rendererRef.current) return;
       const w = containerRef.current.clientWidth;
       const h = containerRef.current.clientHeight;
+      if (!w || !h || w <= 0 || h <= 0) return;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       rendererRef.current.setSize(w, h);
@@ -198,7 +200,10 @@ export const ThreeDigitalTwinViewer: React.FC<Props> = ({ landmarks, telemetry }
       pointsMaterial.dispose();
       lineMaterial.dispose();
     };
-  }, []);
+  } catch (err) {
+    console.warn('WebGL init error on mobile, continuing gracefully:', err);
+  }
+}, []);
 
   // Update Points and Rotation
   useEffect(() => {
